@@ -1,3 +1,5 @@
+# Swimmingly Easy
+
 ## 💡 Inspiration 💡
 
 Before we started brainstorming, we tried to formulate a guiding question to help us brainstorm our ideas. We asked ourselves what is a problem or difficulty in our community that could be made easier with a computer program. Immediately, we thought about our teachers who especially in the past year have been tirelessly working to grade our papers and assignments. The grading process grows repetitive and tedious, and their precious time could be spent with their families. As a result, we decided to create a program that will help them save time and work more efficiently. It will make their work easy...swimmingly easy.
