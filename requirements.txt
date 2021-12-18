@@ -1,5 +1,5 @@
 Streamlit==1.1.0
-sklearn==0.24.2
+sklearn==0.0
 Nltk==3.6.5
 Plotly_express==0.4.0
 Pandas==1.2.4
