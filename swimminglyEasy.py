@@ -1,9 +1,17 @@
 import streamlit as st
 from sklearn.feature_extraction.text import TfidfVectorizer
-from nltk.stem import SnowballStemmer
+from nltk.stem import WordNetLemmatizer
+from nltk import word_tokenize,pos_tag
+import nltk
 from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import plotly.express as px
+
+#Download stuff required for lemmatizer
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('wordnet')
+
 
 
 st.set_page_config(page_icon=":bar_chart", layout="wide", page_title= "Swimmingly Easy")
@@ -14,14 +22,21 @@ vect = TfidfVectorizer()
 
 #Functions
 def preprocess(words):
-    engStemmer = SnowballStemmer('english')
-    words = words.split()
+    # Finds the root/stem of the word
+    # Ex. connecting - > connect
+    wordNet = WordNetLemmatizer()
+    # Puts everything back together, back into a string
+    lemWords = ""
+    for token,tag in pos_tag(word_tokenize(words)):
+        pos=tag[0].lower()
+        
+        if pos not in ['a', 'r', 'n', 'v']:
+            pos='n'
+        lemWords += " " + wordNet.lemmatize(token,pos)
 
-    stemmedWords = ""
-    for i in words:
-        stemmedWords += " " + engStemmer.stem(i)
-    return(stemmedWords)
+    return(lemWords)
 
+# way to loop 
 def compareStr(str1, str2):
     score = len(str1)
     for i,j in zip(str1,str2):
@@ -46,6 +61,8 @@ similarityContainer.subheader("Check essay answers")
 ans = similarityContainer.text_input("Answer key",value="Enter your essay answer from an answer key.")
 student = similarityContainer.text_input("Student answer",value="Enter the student's essay answer.")
 
+#creates these lists only at the beginning
+# doesn't reset till you close tab
 if 'studentScores' not in st.session_state:
     st.session_state.studentScores = []
 if 'studentMcScores' not in st.session_state:
@@ -62,7 +79,7 @@ if button:
         student = preprocess(student)
 
 
-
+        #term frequency inverse document frequency
         TfidfAns = vect.fit_transform([ans])
         TfidfStudent = vect.transform([student])
     
@@ -115,7 +132,7 @@ with st.expander("How does this work?"):
     st.markdown("""
 
 
-    When you enter your answer key and student work, we do a few things with that data. First, we apply some stemming on both texts. This basically means we basically take a word and convert is back to its simplest form (studying to study, going to go, etc.).
+    When you enter your answer key and student work, we do a few things with that data. First, we apply some lemmatizing on both texts. This basically means we basically take a word and convert is back to its simplest form (studying to study, going to go, etc.).
     Then, we transform it into a vector. Since computers cannot process words and vocabulary, we must transform all textual data into a vector of numbers representing word counts. After we do that, we transform the vector into a sparse matrix using TF-IDF or
     Term Frequency-Inverse Document Frequency. This basically is a mathematical way to take words and reflect how important that word is across all documents provided (in this case, your answer key and the student's answer).
 
@@ -130,6 +147,7 @@ st.sidebar.title("Student Grade Plots")
 
 # Essay scores: st.session_state.studentScores
 # Mc scores : st.session_state.studentMcScores
+# Code for bar graphs for written response
 student_number = []
 student_mcnumber=[]
 for x in range(len(st.session_state.studentScores)):
@@ -143,10 +161,11 @@ fig = px.bar(df, x="index", y="values", title="Student Similarity Scores" )
 
 st.sidebar.plotly_chart(fig,use_container_width=True)
 
-
+# Code for creating visuals for MC
 for i in range(len(st.session_state.studentMcScores)):
     student_mcnumber.append("Student" + str(i))
 
+# bar graph, x,y
 S2 = pd.Series(st.session_state.studentMcScores, index=student_mcnumber)
 df2 = pd.DataFrame({'index' : S2.index,
                     'values': S2.values})
